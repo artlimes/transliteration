@@ -1,6 +1,7 @@
 import { ucs2decode, fixChineseSpace, escapeRegExp, mergeOptions } from './utils';
+import data from '../../data';
 
-let codemap = {};
+let charmap = {};
 const defaultOptions = {
   unknown: '[?]',
   replace: [],
@@ -59,19 +60,15 @@ const transliterate = (str, options) => {
       strArrNew.push(opt.unknown);
     } else {
       const offset = ord >> 8;
-      if (typeof codemap[offset] === 'undefined') {
-        try {
-          codemap[offset] = require(`../../data/x${offset.toString(16)}.json`);
-        } catch (e) {
-          codemap[offset] = [];
-        }
+      if (typeof charmap[offset] === 'undefined') {
+        charmap[offset] = data[offset] || [];
       }
       ord &= 0xff;
-      const t = codemap[offset][ord];
+      const t = charmap[offset][ord];
       if (typeof t === 'undefined' || t === null) {
         strArrNew.push(opt.unknown);
       } else {
-        strArrNew.push(codemap[offset][ord]);
+        strArrNew.push(charmap[offset][ord]);
       }
     }
   }
@@ -85,9 +82,9 @@ const transliterate = (str, options) => {
   return strNew;
 };
 
-transliterate.setCodemap = (customCodemap) => {
-  codemap = customCodemap || codemap;
-  return codemap;
+transliterate.setCharmap = (customCharmap) => {
+  charmap = customCharmap || charmap;
+  return charmap;
 };
 
 transliterate.config = (options) => {
